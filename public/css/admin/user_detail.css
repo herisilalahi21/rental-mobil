@@ -1,0 +1,102 @@
+/* user-detail.css */
+:root {
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --dark: #0f172a;
+    --slate-500: #64748b;
+    --slate-400: #94a3b8;
+    --slate-100: #f1f5f9;
+    --bg: #f8fafc;
+    --white: #ffffff;
+    --success: #10b981;
+    --danger: #ef4444;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: var(--bg);
+    color: var(--dark);
+}
+
+.main-container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.modal-card {
+    background: var(--white);
+    width: 100%;
+    max-width: 850px;
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--slate-100);
+}
+
+/* Header Section */
+.header {
+    padding: 30px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--slate-100);
+}
+.header-title { font-size: 22px; font-weight: 800; margin: 0; }
+.header-subtitle { font-size: 13px; color: var(--slate-400); margin-top: 4px; }
+.id-highlight { color: var(--primary); font-weight: 700; }
+.back-btn { 
+    background: var(--bg); border: none; width: 35px; height: 35px; 
+    border-radius: 50%; cursor: pointer; color: var(--slate-500); font-size: 20px; 
+    display: flex; align-items: center; justify-content: center; text-decoration: none;
+}
+
+/* Content Layout */
+.content-body { padding: 40px; }
+.grid-layout { display: grid; grid-template-columns: 1.2fr 1fr; gap: 25px; margin-bottom: 35px; }
+
+.card-box { border: 1px solid var(--slate-100); border-radius: 20px; padding: 25px; background: var(--white); }
+.card-label { font-size: 11px; font-weight: 800; color: var(--slate-500); letter-spacing: 0.5px; margin-bottom: 20px; display: block; }
+
+.profile-section { display: flex; gap: 18px; align-items: center; margin-bottom: 22px; }
+.profile-avatar { 
+    width: 65px; height: 65px; background: #eff6ff; color: var(--primary); 
+    display: flex; align-items: center; justify-content: center; 
+    border-radius: 50%; font-size: 22px; font-weight: 800; 
+}
+.user-name { font-size: 18px; font-weight: 800; margin: 0; }
+.user-mail { font-size: 13px; color: var(--slate-500); margin: 3px 0 10px 0; }
+
+.role-badge { background: #dbeafe; color: var(--primary); padding: 5px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; }
+.contact-list p { font-size: 13px; color: #475569; margin: 10px 0; display: flex; align-items: center; gap: 8px; }
+
+/* Stats Grid */
+.stats-wrapper { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+.stat-box { border: 1px solid var(--slate-100); padding: 15px; border-radius: 16px; text-align: center; }
+.stat-num { font-size: 24px; font-weight: 800; margin: 4px 0; }
+
+.footer-text { font-size: 12px; color: var(--slate-400); border-top: 1px solid var(--bg); padding-top: 15px; }
+.dot { font-weight: 700; }
+.online { color: var(--success); }
+.offline { color: var(--danger); }
+
+/* Status Options Form */
+.status-container { background: var(--bg); padding: 25px; border-radius: 20px; border: 1px solid var(--slate-100); }
+.options-group { display: flex; gap: 12px; margin-top: 15px; }
+.btn-check { 
+    flex: 1; padding: 14px; border-radius: 14px; background: var(--white); 
+    border: 1.5px solid #e2e8f0; cursor: pointer; text-align: center; 
+    font-weight: 700; font-size: 14px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-check input { display: none; }
+.btn-check.active { background: var(--primary); color: var(--white); border-color: var(--primary); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
+
+/* Footer Actions */
+.footer-actions { padding: 30px 40px; background: var(--white); border-top: 1px solid var(--slate-100); display: flex; gap: 15px; }
+.save-btn { background: var(--primary); color: var(--white); border: none; padding: 14px 30px; border-radius: 14px; font-weight: 700; cursor: pointer; flex: 1.5; font-size: 14px; transition: 0.2s; }
+.save-btn:hover { background: var(--primary-hover); }
+.cancel-btn { background: var(--white); color: var(--slate-500); border: 1px solid #e2e8f0; padding: 14px 30px; border-radius: 14px; font-weight: 700; cursor: pointer; flex: 1; font-size: 14px; text-align: center; text-decoration: none; }

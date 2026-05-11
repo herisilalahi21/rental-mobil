@@ -1,0 +1,148 @@
+/* Hero Styles */
+.hero {
+    background-color: #0f172a;
+    color: white;
+    padding: 100px 0;
+    border-bottom-left-radius: 0;
+}
+
+.hero-container { padding-left: 5%; }
+
+.hero h1 {
+    font-size: 64px;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 20px;
+}
+
+.highlight { color: #facc15; }
+
+.hero p {
+    color: #94a3b8;
+    font-size: 18px;
+    max-width: 500px;
+    margin-bottom: 40px;
+}
+
+.btn-blue {
+    background: #2563eb;
+    color: white;
+    padding: 16px 32px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-block;
+    margin-right: 15px;
+}
+
+.btn-white {
+    background: white;
+    color: #0f172a;
+    padding: 16px 32px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.hero-stats {
+    display: flex;
+    gap: 50px;
+    margin-top: 60px;
+}
+
+.stat h3 { font-size: 32px; margin: 0; color: #facc15; }
+.stat span { color: #94a3b8; font-size: 14px; }
+
+/* Car Selection Styles */
+.car-selection { padding: 80px 0; background: #f8fafc; }
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 40px;
+}
+
+.label { color: #2563eb; font-weight: 700; font-size: 12px; letter-spacing: 1px; }
+
+.car-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.car-card {
+    background: white;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+}
+
+.car-thumb { height: 160px; margin: 12px; border-radius: 15px; position: relative; }
+.thumb-cyan { background: #e0faff; }
+.thumb-red { background: #fce8e8; }
+
+.badge { position: absolute; top: 12px; right: 12px; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.badge-available { background: #dcfce7; color: #166534; }
+.badge-rented { background: #fee2e2; color: #991b1b; }
+
+.car-info { padding: 0 20px 20px 20px; }
+.car-info h3 { font-size: 18px; margin-bottom: 5px; }
+.car-info p { color: #64748b; font-size: 13px; margin-bottom: 20px; }
+
+.price-row { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 15px; margin-bottom: 15px; }
+.price-row strong { color: #2563eb; font-size: 18px; }
+
+.btn-dark {
+    width: 100%;
+    background: #0f172a;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Benefits Section */
+.benefits-section { padding-bottom: 80px; background: #f8fafc; }
+.benefits-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+
+.benefit-card { background: white; padding: 40px 30px; border-radius: 20px; border: 1px solid #e2e8f0; }
+.dark-card { background: #0f172a; color: white; border: none; }
+.dark-card p { color: #94a3b8; }
+
+.icon-box { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; font-size: 20px; }
+.blue-box { background: #e0f2fe; }
+.yellow-box { background: #facc15; color: #0f172a; font-weight: 800; }
+.green-box { background: #dcfce7; }
+
+
+
+/* Styling untuk gambar di dalam card */
+.car-thumb {
+    width: 100%;
+    height: 200px; /* Sesuaikan tinggi yang kamu mau */
+    overflow: hidden;
+    position: relative;
+    border-radius: 12px 12px 0 0; /* Biar tumpul di atas saja */
+}
+
+.car-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Biar gambar proporsional, gak gepeng */
+    transition: transform 0.3s ease;
+}
+
+.car-card:hover .car-img {
+    transform: scale(1.1); /* Efek zoom tipis pas di-hover */
+}
+
+.badge {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 10;
+}

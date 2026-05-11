@@ -1,0 +1,208 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-shadow: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: #2563eb; /* Warna biru utama */
+    overflow: hidden;
+}
+
+.login-wrapper {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+}
+
+/* Sisi Kiri */
+.side-info {
+    flex: 1.2;
+    padding: 60px 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: white;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 60px;
+}
+
+.logo-box {
+    background: #f59e0b;
+    color: #000;
+    font-weight: 800;
+    padding: 8px 15px;
+    border-radius: 10px;
+    font-size: 1.2rem;
+}
+
+.brand-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.hero-text h1 {
+    font-size: 3.5rem;
+    line-height: 1.1;
+    margin-bottom: 20px;
+}
+
+.hero-text p {
+    font-size: 1.1rem;
+    opacity: 0.8;
+    max-width: 400px;
+}
+
+.feature-list {
+    list-style: none;
+    margin-top: 50px;
+}
+
+.feature-list li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+    font-size: 0.95rem;
+    opacity: 0.9;
+}
+
+.dot.green {
+    width: 8px;
+    height: 8px;
+    background: #10b981;
+    border-radius: 50%;
+}
+
+/* Sisi Kanan */
+.side-form {
+    flex: 1;
+    background: #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-card {
+    background: white;
+    width: 100%;
+    max-width: 450px;
+    padding: 50px;
+    border-radius: 24px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+.subtitle {
+    color: #2563eb;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+}
+
+h2 {
+    margin: 10px 0 35px 0;
+    font-size: 1.8rem;
+    color: #1e293b;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 8px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+    font-size: 0.95rem;
+    outline: none;
+    transition: 0.3s;
+}
+
+.input-group input:focus {
+    border-color: #2563eb;
+    background: #fff;
+}
+
+.password-wrapper {
+    position: relative;
+}
+
+.toggle-pass {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    opacity: 0.5;
+}
+
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: -10px;
+    margin-bottom: 30px;
+    font-size: 0.85rem;
+}
+
+.forgot-pw {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.btn-login {
+    width: 100%;
+    padding: 16px;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-login:hover {
+    background: #1d4ed8;
+    transform: translateY(-2px);
+}
+
+.register-text {
+    text-align: center;
+    margin-top: 30px;
+    font-size: 0.9rem;
+    color: #64748b;
+}
+
+.register-text a {
+    color: #2563eb;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.error-msg {
+    color: #ef4444;
+    font-size: 0.75rem;
+    margin-top: 5px;
+    display: block;
+}

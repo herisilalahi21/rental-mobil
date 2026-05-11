@@ -1,0 +1,137 @@
+:root {
+    --primary-blue: #2563eb;
+    --dark-navy: #0f172a;
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --white: #ffffff;
+    --bg-light: #f8fafc;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+body {
+    background-color: var(--bg-light);
+    color: var(--text-main);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Navbar - Dibuat Sticky agar tetap di atas */
+.navbar {
+    background: var(--white);
+    height: 80px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #e2e8f0;
+    position: sticky;
+    top: 0;
+    z-index: 9999; /* Sangat tinggi agar tidak tertutup konten */
+    pointer-events: auto; /* Memastikan bisa diklik */
+}
+
+.nav-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 20px;
+}
+
+.logo-box {
+    background: var(--primary-blue);
+    color: white;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-weight: 800;
+}
+
+.menu {
+    list-style: none;
+    display: flex;
+    gap: 30px;
+}
+
+.menu a {
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.menu a.active {
+    color: var(--primary-blue);
+    font-weight: 700;
+}
+
+/* Auth Buttons */
+.nav-auth {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.btn-outline, .btn-filled {
+    text-decoration: none;
+    padding: 10px 24px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: 0.3s;
+    cursor: pointer !important;
+    display: inline-block;
+}
+
+.btn-outline {
+    color: var(--primary-blue);
+    border: 1px solid #e2e8f0;
+}
+
+.btn-outline:hover {
+    background: #f1f5f9;
+    border-color: var(--primary-blue);
+}
+
+.btn-filled {
+    background: var(--primary-blue);
+    color: white;
+}
+
+.btn-filled:hover {
+    background: #1d4ed8;
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.2);
+}
+
+/* Konten Utama */
+.main-content {
+    position: relative;
+    z-index: 1; /* Lebih rendah dari navbar */
+}
+
+.btn-logout {
+    background: #fff1f2;
+    color: #e11d48;
+    border: 1px solid #ffe4e6;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}
