@@ -40,4 +40,8 @@ class User extends Authenticatable
     {
         return $this->hasMany(Transaksi::class, 'id_user', 'id_user');
     }
+
+    // Tambahkan ini di dalam class User { ... }
+
+
 }

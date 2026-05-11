@@ -1,44 +1,46 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+namespace App\Http\Controllers\Owner;
 
-return new class extends Migration
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Mobil;
+use App\Models\Booking;
+
+class DashboardController extends Controller
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    public function index()
     {
-        Schema::create('mobils', function (Blueprint $table) {
-            // Gunakan id_mobil sebagai primary key biar rapi
-            $table->id('id_mobil');
-            
-            // KOLOM KRUSIAL: Ini yang dicari Laravel tadi
-            $table->unsignedBigInteger('id_user'); 
-            
-            // Data Mobil
-            $table->string('nama_mobil');
-            $table->string('brand');
-            $table->string('plat_nomor')->unique();
-            $table->integer('harga_sewa');
-            $table->enum('status', ['tersedia', 'disewa', 'maintenance'])->default('tersedia');
-            $table->timestamps();
+        // Ambil ID user yang login (ini nilainya dari kolom id_user di tabel users)
+        $userId = Auth::id();
 
-            // Relasi ke tabel users
-            $table->foreign('id_user')
-                  ->references('id_user')
-                  ->on('users')
-                  ->onDelete('cascade');
-        });
-    }
+        // 1. Ganti 'user_id' jadi 'id_user' sesuai migration lo
+        $totalMobil = Mobil::where('id_user', $userId)->count();
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::dropIfExists('mobils');
+        // 2. Query Booking (Pastikan kolom di tabel booking juga sinkron)
+        $totalBooking = Booking::whereHas('mobil', function ($query) use ($userId) {
+            $query->where('id_user', $userId);
+        })->where('status', 'pending')->count();
+
+        // 3. Total Pendapatan
+        $pendapatan = Booking::whereHas('mobil', function ($query) use ($userId) {
+            $query->where('id_user', $userId);
+        })
+        ->where('status', 'selesai')
+        ->whereMonth('created_at', date('m'))
+        ->sum('total_harga');
+
+        // 4. List Booking Terbaru
+        $bookings = Booking::with(['user', 'mobil'])
+            ->whereHas('mobil', function ($query) use ($userId) {
+                $query->where('id_user', $userId);
+            })
+            ->where('status', 'pending')
+            ->latest()
+            ->take(5)
+            ->get();
+
+        return view('owner.dashboard', compact('totalMobil', 'totalBooking', 'pendapatan', 'bookings'));
     }
-};
+}

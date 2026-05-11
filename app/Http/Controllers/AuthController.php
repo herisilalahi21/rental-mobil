@@ -27,13 +27,29 @@ class AuthController extends Controller
             $request->session()->regenerate();
             
             $user = Auth::user();
-            session()->flash('success', 'Selamat datang kembali, ' . $user->nama . '!');
 
-            // Perbaikan: Gunakan redirect path langsung jika intended() sering bermasalah
+            // 1. Redirect untuk Admin
             if ($user->role === 'admin') {
+                session()->flash('success', 'Selamat datang Admin, ' . $user->nama . '!');
                 return redirect('/admin/dashboard');
             }
             
+            // 2. Redirect untuk Owner
+            if ($user->role === 'owner') {
+                // Opsional: Cek jika akun masih pending
+                if ($user->status_akun !== 'aktif') {
+                    Auth::logout();
+                    return back()->withErrors([
+                        'loginError' => 'Akun Owner Anda masih dalam tahap verifikasi oleh Admin.',
+                    ]);
+                }
+                
+                session()->flash('success', 'Selamat datang kembali, ' . $user->nama . '!');
+                return redirect('/owner/dashboard');
+            }
+            
+            // 3. Redirect untuk Customer (Default)
+            session()->flash('success', 'Selamat datang, ' . $user->nama . '!');
             return redirect('/'); 
         }
 
@@ -64,7 +80,6 @@ class AuthController extends Controller
         try {
             $ktpPath = null;
             if ($request->hasFile('ktp_file')) {
-                // Gunakan folder yang jelas
                 $ktpPath = $request->file('ktp_file')->store('uploads/ktp', 'public');
             }
 
@@ -93,7 +108,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         
-        // Redirect ke login agar session bersih
         return redirect('/login')->with('success', 'Berhasil keluar.');
     }
 }

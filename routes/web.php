@@ -7,6 +7,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Admin\OwnerController;
 use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\LaporanController;
+use App\Http\Controllers\Owner\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -87,6 +88,11 @@ Route::middleware('auth')->group(function () {
         
     });
     });
+          //Route for owner
 
+Route::middleware(['auth', 'isOwner'])->group(function () {
+    Route::get('/owner/dashboard', [DashboardController::class, 'index'])->name('owner.dashboard');
+    // Tambahin route lain: Kelola Mobil, Riwayat, dll sesuai menu di gambar
+});
 
 });
