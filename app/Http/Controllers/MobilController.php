@@ -9,68 +9,94 @@ use Illuminate\Support\Facades\Auth;
 class MobilController extends Controller
 {
     /**
-     * Menampilkan semua daftar mobil dengan Fitur Search & Filter
+     * Landing Page
      */
-    public function index(Request $request) // Tambahin Request $request di sini
+    public function welcome()
     {
-        $query = Mobil::query();
+        $mobil = Mobil::where('status', 'tersedia')
+            ->latest()
+            ->take(4)
+            ->get();
 
-        // 1. Logika Search (Cari Nama Mobil)
-        if ($request->has('search') && $request->search != '') {
-            $query->where('nama_mobil', 'like', '%' . $request->search . '%');
-        }
-
-        // 2. Logika Filter Kategori
-        if ($request->has('kategori') && $request->kategori != '') {
-            $query->where('kategori', $request->kategori);
-        }
-
-        // 3. Logika Filter Status
-        if ($request->has('status') && $request->status != '') {
-            $query->where('status', $request->status);
-        }
-
-        /**
-         * PERBAIKAN UTAMA:
-         * Ganti Mobil::all() menjadi paginate(8).
-         * Ini biar error "Method Collection::appends does not exist" hilang!
-         */
-        $mobils = $query->paginate(8); 
-
-        return view('daftar_mobil', compact('mobils'));
+        return view('welcome', compact('mobil'));
     }
 
     /**
-     * Menyimpan data mobil ke database
+     * Daftar Mobil
+     */
+    public function index(Request $request)
+    {
+        $query = Mobil::query();
+
+        if ($request->filled('search')) {
+            $query->where('nama_mobil', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->filled('kategori')) {
+            $query->where('kategori', $request->kategori);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $mobil = $query->latest()
+            ->paginate(8)
+            ->withQueryString();
+
+        return view('daftar_mobil', compact('mobil'));
+    }
+
+    /**
+     * Detail Mobil
+     */
+    public function show($id)
+    {
+        $mobil = Mobil::findOrFail($id);
+
+        return view('detail_mobil', compact('mobil'));
+    }
+
+    /**
+     * Simpan Mobil (FIX FINAL)
      */
     public function store(Request $request)
     {
-        // Tambahin 'kategori' dan 'transmisi' di validasi biar sinkron sama desain
         $request->validate([
-            'nama_mobil'     => 'required',
-            'merk'           => 'required',
-            'plat_nomor'     => 'required|unique:mobils',
+            'nama_mobil'     => 'required|string|max:255',
+            'plat_nomor'     => 'required|unique:armada_mobils,plat_nomor',
             'tahun'          => 'required|numeric',
             'harga_per_hari' => 'required|numeric',
+            'kategori'       => 'required',
+            'transmisi'      => 'required',
             'deskripsi'      => 'required',
-            'kategori'       => 'required', // Tambahan
+            'foto'           => 'nullable|image|mimes:jpg,png,jpeg|max:2048'
         ]);
+
+        $path = null;
+
+        if ($request->hasFile('foto')) {
+            $path = $request->file('foto')->store('armada', 'public');
+        }
 
         Mobil::create([
-            'id_owner'       => Auth::id(),
+            'user_id'        => auth()->user()->id_user, // FIX AMAN
             'nama_mobil'     => $request->nama_mobil,
-            'merk'           => $request->merk,
             'plat_nomor'     => $request->plat_nomor,
             'tahun'          => $request->tahun,
-            'harga_sewa'     => $request->harga_per_hari,
-            'status'         => 'Tersedia', 
+            'harga_per_hari' => $request->harga_per_hari,
+            'status'         => 'tersedia',
             'kategori'       => $request->kategori,
-            'transmisi'      => $request->transmisi ?? 'Manual',
+            'transmisi'      => $request->transmisi,
             'deskripsi'      => $request->deskripsi,
+            'foto'           => $path,
+
+            // FIX PENTING: pakai array (bukan json_encode)
+            'fitur'          => $request->fitur ?? [],
         ]);
 
-        return redirect()->route('mobil.index')->with('success', 'Mobil berhasil ditambahkan!');
+        return redirect()
+            ->back()
+            ->with('success', 'Mobil berhasil ditambahkan!');
     }
-
-    
 }

@@ -3,11 +3,13 @@
 @section('title', 'Kelola User')
 
 @section('page_title', 'Kelola Data User')
+
 @push('styles')
     <link rel="stylesheet" href="{{ asset('css/admin/user_data.css') }}">
 @endpush
 
 @section('content')
+    {{-- Bagian Statistik - Sekarang pake variabel mandiri dari UserController --}}
     <section class="user-stats-grid">
         <div class="user-stat-card">
             <div class="user-stat-icon" style="background:#DBEAFE; color:#2563EB;">👤</div>
@@ -41,6 +43,7 @@
 
     <div class="table-container">
         <div class="table-header">
+            {{-- Form Search & Filter --}}
             <form action="{{ route('admin.users') }}" method="GET" class="filter-form">
                 <div class="search-box">
                     <span class="search-icon">🔍</span>
@@ -61,7 +64,8 @@
                 </select>
             </form>
 
-            <a href="{{ route('admin.users.export', request()->except(['id', 'id_user'])) }}" class="btn-export">
+            {{-- Tombol Export --}}
+            <a href="{{ route('admin.users.export', request()->query()) }}" class="btn-export">
                 Export Data 📥
             </a>
         </div>
@@ -85,7 +89,6 @@
                     <td>
                         <div class="user-cell">
                             @php
-                                // Generate warna avatar otomatis berdasarkan nama
                                 $namaUser = $user->nama ?? 'Unknown';
                                 $warna = substr(md5($namaUser), 0, 6);
                             @endphp
@@ -104,7 +107,7 @@
                             {{ ucfirst($user->role) }}
                         </span>
                     </td>
-                    <td class="date-cell">{{ $user->created_at->format('d M Y') }}</td>
+                    <td class="date-cell">{{ $user->created_at ? $user->created_at->format('d M Y') : '-' }}</td>
                     <td>
                         <span class="badge-status {{ $user->status_akun == 'aktif' ? 'badge-aktif' : ($user->status_akun == 'suspend' ? 'badge-pending' : 'badge-nonaktif') }}">
                             {{ ucfirst($user->status_akun ?? 'aktif') }}
@@ -112,16 +115,13 @@
                     </td>
                     <td>
                         <div class="action-wrapper">
-    {{-- Rute untuk melihat detail user --}}
-    <a href="{{ route('admin.users.detail', $user->id_user) }}" class="btn-detail">
-        Detail
-    </a>
-
-    {{-- Rute untuk membuka halaman form edit user --}}
-    <a href="{{ route('admin.users.edit', $user->id_user) }}" class="btn-edit">
-        Edit
-    </a>
-</div>
+                            <a href="{{ route('admin.users.detail', $user->id_user) }}" class="btn-detail">
+                                Detail
+                            </a>
+                            <a href="{{ route('admin.users.edit', $user->id_user) }}" class="btn-edit">
+                                Edit
+                            </a>
+                        </div>
                     </td>
                 </tr>
                 @empty

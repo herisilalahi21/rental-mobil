@@ -4,6 +4,40 @@
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('css/rencar.css') }}">
+    <style>
+        .btn-booking {
+            display: block;
+            width: 100%;
+            background-color: #007bff;
+            color: #fff;
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+            border: none;
+        }
+        .btn-booking:hover {
+            background-color: #0056b3;
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+        }
+        .btn-booked-now {
+            display: block;
+            width: 100%;
+            background-color: #e9ecef;
+            color: #6c757d;
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: not-allowed;
+            margin-top: 15px;
+        }
+    </style>
 @endpush
 
 @section('content')
@@ -15,8 +49,8 @@
                 <p>Pilih dari ribuan mobil terverifikasi. Booking online, ambil di kota Anda — semua dalam hitungan menit.</p>
                 
                 <div class="hero-actions">
-                    <a href="{{ route('mobil.index') }}" class="btn-blue">Lihat Mobil <span class="arrow">→</span></a>
-                    <a href="#" class="btn-white">Booking Sekarang</a>
+                    <a href="{{ route('mobil.umum') }}" class="btn-blue">Lihat Mobil <span class="arrow">→</span></a>
+                    <a href="#car-selection" class="btn-white">Booking Sekarang</a>
                 </div>
 
                 <div class="hero-stats">
@@ -38,48 +72,59 @@
     </header>
 
     {{-- BAGIAN DAFTAR MOBIL --}}
-    <section class="car-selection">
+    <section class="car-selection" id="car-selection">
         <div class="container">
             <div class="section-header">
                 <div class="header-text">
                     <span class="label">PILIHAN MOBIL</span>
                     <h2>Mobil Pilihan untuk Anda</h2>
                 </div>
-                <a href="{{ route('mobil.index') }}" class="btn-outline-small">Lihat Semua →</a>
+                <a href="{{ route('mobil.umum') }}" class="btn-outline-small">Lihat Semua →</a>
             </div>
 
             <div class="car-grid">
+                @forelse($mobil as $item)
                 <div class="car-card">
                     <div class="car-thumb">
-                        <img src="{{ asset('#') }}" alt="Toyota Innova" class="car-img">
-                        <span class="badge badge-available">Tersedia</span>
+                        @if($item->foto)
+                            <img src="{{ asset('storage/' . $item->foto) }}" alt="{{ $item->nama_mobil }}" class="car-img">
+                        @else
+                            <img src="{{ asset('images/default-car.jpg') }}" alt="No Image" class="car-img">
+                        @endif
+                        
+                        <span class="badge {{ $item->status == 'tersedia' ? 'badge-available' : 'badge-booked' }}">
+                            {{ ucfirst($item->status) }}
+                        </span>
                     </div>
                     <div class="car-info">
-                        <h3>Toyota Innova Reborn</h3>
-                        <p>MPV • Matic • 7 seater</p>
+                        <h3>{{ $item->nama_mobil }}</h3>
+                        <p>{{ $item->kategori }} • {{ $item->transmisi }} • {{ $item->tahun }}</p>
+                        
                         <div class="price-row">
-                            <strong>Rp 650rb<span>/hari</span></strong>
+                            {{-- PERBAIKAN: Harga murni dari database dengan format Rupiah --}}
+                            <strong>Rp {{ number_format($item->harga_per_hari, 0, ',', '.') }}<span>/hari</span></strong>
                             <span class="rating">★ 4.9</span>
                         </div>
-                        <button class="btn-dark">Lihat Detail</button>
-                    </div>
-                </div>
 
-                <div class="car-card">
-                    <div class="car-thumb">
-                        <img src="{{ asset('#') }}" alt="Honda Civic" class="car-img">
-                        <span class="badge badge-rented">Disewa</span>
-                    </div>
-                    <div class="car-info">
-                        <h3>Honda Civic Type R</h3>
-                        <p>Sport • Manual • 4 seater</p>
-                        <div class="price-row">
-                            <strong>Rp 1,25jt<span>/hari</span></strong>
-                            <span class="rating">★ 4.9</span>
-                        </div>
-                        <button class="btn-dark">Lihat Detail</button>
+                        {{-- LOGIKA TOMBOL BOOKING --}}
+                        @if($item->status == 'tersedia')
+                            @auth
+                                <a href="{{ route('booking.create', $item->id) }}" class="btn-booking">
+                                    Booking Sekarang
+                                </a>
+                            @else
+                                <a href="{{ route('login') }}" class="btn-booking" onclick="alert('Silakan login terlebih dahulu untuk melakukan booking')">
+                                    Booking Sekarang
+                                </a>
+                            @endauth
+                        @else
+                            <div class="btn-booked-now">Tidak Tersedia</div>
+                        @endif
                     </div>
                 </div>
+                @empty
+                <div class="no-data">Belum ada mobil tersedia saat ini.</div>
+                @endforelse
             </div>
         </div>
     </section>
@@ -91,17 +136,17 @@
                 <div class="benefit-card">
                     <div class="icon-box blue-box">💳</div>
                     <h4>Mudah Digunakan</h4>
-                    <p>Pesan mobil dalam 3 langkah: pilih, bayar, ambil. Antarmuka intuitif.</p>
+                    <p>Pesan mobil dalam 3 langkah: pilih, bayar, ambil.</p>
                 </div>
                 <div class="benefit-card dark-card">
-                    <div class="icon-box yellow-box">M</div>
+                    <div class="icon-box yellow-box">🚗</div>
                     <h4>Banyak Pilihan Mobil</h4>
-                    <p>8.230+ unit MPV, SUV, Sedan, hingga Sport. Semua terverifikasi.</p>
+                    <p>Ribuan unit terverifikasi untuk kebutuhan Anda.</p>
                 </div>
                 <div class="benefit-card">
                     <div class="icon-box green-box">🕒</div>
                     <h4>Proses Cepat</h4>
-                    <p>Konfirmasi 1 jam, pembayaran instan, customer service 24/7.</p>
+                    <p>Konfirmasi kilat dan layanan pelanggan 24/7.</p>
                 </div>
             </div>
         </div>

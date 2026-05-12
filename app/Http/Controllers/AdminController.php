@@ -6,7 +6,6 @@ use App\Models\User;
 use App\Models\Mobil;
 use App\Models\Transaksi;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
 class AdminController extends Controller
@@ -16,185 +15,172 @@ class AdminController extends Controller
      */
     public function index()
     {
-        // Proteksi Role
-        if (!Auth::check() || Auth::user()->role !== 'admin') {
-            return redirect('/')->with('error', 'Akses ditolak!');
-        }
-
-        // 1. Statistik Cards
-        $jumlahUser = User::where('role', 'customer')->count();
+        // Statistik User
+        $jumlahUser  = User::where('role', 'customer')->count();
         $jumlahOwner = User::where('role', 'owner')->count();
+
+        // Statistik Mobil
         $jumlahMobil = Mobil::count();
-        
-        // Menghitung total pendapatan dari transaksi yang sukses/selesai
-        $totalPendapatan = Transaksi::whereIn('status', ['selesai', 'berhasil'])->sum('total_harga');
-        
-        // Menghitung owner yang butuh verifikasi
+
+        // 🔥 FIX: status sesuai database (HANYA "selesai")
+        $totalPendapatan = Transaksi::where('status', 'selesai')
+            ->sum('total_harga') ?? 0;
+
         $ownerPendingCount = User::where('role', 'owner')
-                                 ->where('status_akun', 'pending')
-                                 ->count();
+            ->where('status_akun', 'pending')
+            ->count();
 
-        // 2. Aktivitas Terbaru (Ambil 5 transaksi terakhir beserta data usernya)
-        $aktivitasTerbaru = Transaksi::with('user')
-                                     ->latest()
-                                     ->take(5)
-                                     ->get();
+        // Aktivitas terbaru
+        $aktivitasTerbaru = Transaksi::with([
+                'user:id_user,nama,email'
+            ])
+            ->latest()
+            ->take(5)
+            ->get();
 
-        // 3. Logika Grafik Pendapatan (12 Bulan Terakhir)
+        // Grafik 12 bulan
         $pendapatanBulanan = [];
         $labelBulan = [];
 
         for ($i = 11; $i >= 0; $i--) {
             $bulan = Carbon::now()->subMonths($i);
-            
-            $total = Transaksi::whereIn('status', ['selesai', 'berhasil'])
-                              ->whereYear('created_at', $bulan->year)
-                              ->whereMonth('created_at', $bulan->month)
-                              ->sum('total_harga');
+
+            $total = Transaksi::where('status', 'selesai')
+                ->whereYear('created_at', $bulan->year)
+                ->whereMonth('created_at', $bulan->month)
+                ->sum('total_harga');
 
             $pendapatanBulanan[] = (int) $total;
-            $labelBulan[] = $bulan->format('M'); // Contoh: Jan, Feb, Mar
+            $labelBulan[] = $bulan->format('M');
         }
 
         return view('admin.dashboard', compact(
-            'jumlahUser', 
-            'jumlahOwner', 
-            'jumlahMobil', 
+            'jumlahUser',
+            'jumlahOwner',
+            'jumlahMobil',
             'totalPendapatan',
-            'ownerPendingCount', 
-            'aktivitasTerbaru', 
+            'ownerPendingCount',
+            'aktivitasTerbaru',
             'pendapatanBulanan',
             'labelBulan'
         ));
     }
 
     /**
-     * Halaman Kelola Data User
+     * Kelola Data User
      */
     public function dataUser(Request $request)
     {
         $query = User::where('role', '!=', 'admin');
 
-        // Filter Pencarian
         if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
-                $q->where('nama', 'like', '%' . $request->search . '%')
-                  ->orWhere('email', 'like', '%' . $request->search . '%');
+            $query->where(function ($q) use ($request) {
+                $q->where('nama', 'like', "%{$request->search}%")
+                  ->orWhere('email', 'like', "%{$request->search}%");
             });
         }
 
-        // Filter Role & Status
-        if ($request->filled('role')) { $query->where('role', $request->role); }
-        if ($request->filled('status')) { $query->where('status_akun', $request->status); }
+        if ($request->filled('role')) {
+            $query->where('role', $request->role);
+        }
 
-        $users = $query->latest()
-                       ->paginate(10)
-                       ->appends($request->only(['search', 'role', 'status']));
+        if ($request->filled('status')) {
+            $query->where('status_akun', $request->status);
+        }
 
-        // Statistik untuk Halaman User Data
-        $totalUser = User::whereIn('role', ['customer', 'owner'])->count();
-        $userAktif = User::whereIn('role', ['customer', 'owner'])->where('status_akun', 'aktif')->count();
-        $roleOwner = User::where('role', 'owner')->count();
-        $nonAktif  = User::whereIn('role', ['customer', 'owner'])
-                         ->whereIn('status_akun', ['nonaktif', 'suspend'])
-                         ->count();
+        $users = $query->latest()->paginate(10);
 
-        $ownerPendingCount = User::where('role', 'owner')
-                                 ->where('status_akun', 'pending')
-                                 ->count();
+        $stats = [
+            'total'    => User::where('role', '!=', 'admin')->count(),
+            'aktif'    => User::where('status_akun', 'aktif')->count(),
+            'owner'    => User::where('role', 'owner')->count(),
+            'pending'  => User::where('role', 'owner')->where('status_akun', 'pending')->count(),
+            'nonAktif' => User::whereIn('status_akun', ['nonaktif', 'suspend'])->count(),
+        ];
 
-        return view('admin.user_data', compact(
-            'users', 'totalUser', 'userAktif', 'roleOwner', 
-            'nonAktif', 'ownerPendingCount'
-        ));
+        return view('admin.user_data', compact('users', 'stats'));
     }
 
     /**
-     * Detail User
+     * Detail user
      */
-    public function showUser($id)
+    public function userDetail($id)
     {
-        // Mengasumsikan di Model User sudah ada function transaksi() dan mobils()
-        $user = User::withCount(['transaksi', 'mobils'])->findOrFail($id);
+        $user = User::where('id_user', $id)->firstOrFail();
         return view('admin.user_detail', compact('user'));
     }
 
     /**
-     * Update Status User
+     * Update user
      */
-    public function updateUser(Request $request, $id)
+    public function userUpdate(Request $request, $id)
     {
         $request->validate([
-            'status_akun' => 'required|in:aktif,suspend,nonaktif',
+            'nama' => 'required|string|max:255',
+            'status_akun' => 'required|in:aktif,suspend,nonaktif,pending',
         ]);
 
-        $user = User::findOrFail($id);
-        $user->status_akun = $request->status_akun;
-        $user->save();
+        $user = User::where('id_user', $id)->firstOrFail();
 
-        return redirect()->route('admin.users')->with('success', 'Status akun ' . $user->nama . ' berhasil diperbarui!');
+        $user->update([
+            'nama'        => $request->nama,
+            'status_akun' => $request->status_akun,
+            'role'        => $request->role,
+            'no_hp'       => $request->no_hp,
+            'alamat'      => $request->alamat,
+        ]);
+
+        return redirect()
+            ->route('admin.users')
+            ->with('success', 'User berhasil diperbarui!');
     }
-      //data mobil//
-   public function manageMobil()
-{
-    // 1. Ambil data mobil beserta relasi ownernya
-    $mobil = Mobil::with('owner')->paginate(10); 
-    
-    // 2. Hitung statistik sesuai kategori di dashboard
-    $stats = [
-        'total'      => Mobil::count(),
-        'tersedia'   => Mobil::where('status', 'tersedia')->count(),
-        'disewa'     => Mobil::where('status', 'disewa')->count(),
-        'bermasalah' => Mobil::where('status', 'bermasalah')->count(),
-    ];
-
-    // 3. Kirim ke view (Pastikan file ada di resources/views/admin/data_mobil/index.blade.php)
-    return view('admin.data_mobil', compact('mobil', 'stats'));
-}
-
-
-public function showMobil($id_mobil)
-{
-    // Mengambil data mobil beserta relasinya
-    $mobil = Mobil::with(['owner', 'transaksi'])->where('id_mobil', $id_mobil)->firstOrFail();
-    
-    // Kirim ke view detail_mobil.blade.php
-    return view('admin.detail_mobil', compact('mobil'));
-}
 
     /**
-     * Export User ke CSV
+     * Kelola Mobil
      */
-    public function exportUser(Request $request) 
+    public function manageMobil()
     {
-        $fileName = 'Data_User_RentaCar_' . date('Ymd_His') . '.csv';
+        $mobil = Mobil::with('owner')->latest()->paginate(10);
+
+        $stats = [
+            'total'      => Mobil::count(),
+            'tersedia'   => Mobil::where('status', 'tersedia')->count(),
+            'disewa'     => Mobil::where('status', 'disewa')->count(),
+            'maintenance'=> Mobil::where('status', 'maintenance')->count(),
+        ];
+
+        return view('admin.data_mobil', compact('mobil', 'stats'));
+    }
+
+    /**
+     * Export CSV
+     */
+    public function exportUser()
+    {
+        $fileName = 'Laporan_User_' . now()->format('Ymd_His') . '.csv';
         $users = User::where('role', '!=', 'admin')->get();
 
         $headers = [
-            "Content-type"        => "text/csv",
+            "Content-type" => "text/csv",
             "Content-Disposition" => "attachment; filename=$fileName",
-            "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-            "Expires"             => "0"
         ];
 
-        $columns = ['ID User', 'Nama', 'Email', 'Role', 'Status Akun', 'Tanggal Bergabung'];
-
-        $callback = function() use($users, $columns) {
+        $callback = function () use ($users) {
             $file = fopen('php://output', 'w');
-            fputs($file, (chr(0xEF) . chr(0xBB) . chr(0xBF))); // BOM untuk Excel
-            fputcsv($file, $columns);
-            
+
+            fputcsv($file, ['ID', 'Nama', 'Email', 'Role', 'Status', 'Tanggal']);
+
             foreach ($users as $user) {
                 fputcsv($file, [
-                    'USR-' . str_pad($user->id_user ?? $user->id, 5, '0', STR_PAD_LEFT), 
-                    $user->nama, 
-                    $user->email, 
-                    ucfirst($user->role), 
-                    ucfirst($user->status_akun), 
-                    $user->created_at->format('d-m-Y H:i')
+                    $user->id_user,
+                    $user->nama,
+                    $user->email,
+                    $user->role,
+                    $user->status_akun,
+                    $user->created_at?->format('d/m/Y'),
                 ]);
             }
+
             fclose($file);
         };
 

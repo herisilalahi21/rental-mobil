@@ -4,28 +4,20 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Transaksi extends Model
 {
     use HasFactory;
 
-    // 1. Nama tabel di database
     protected $table = 'transaksis';
 
-    // 2. Primary Key kustom (Sesuai migration: id_transaksi)
-    protected $primaryKey = 'id_transaksi'; 
+    protected $primaryKey = 'id';
 
-    // 3. Set agar Laravel tahu PK ini auto-increment
-    public $incrementing = true;
-    protected $keyType = 'int';
-
-    // 4. Kolom yang boleh diisi (Mass Assignment)
     protected $fillable = [
         'id_user',
         'id_mobil',
-        'tgl_mulai',    // Sesuaikan dengan migration
-        'tgl_selesai',  // Sesuaikan dengan migration
+        'tgl_mulai',
+        'tgl_selesai',
         'durasi',
         'total_harga',
         'status',
@@ -33,22 +25,18 @@ class Transaksi extends Model
     ];
 
     /**
-     * Relasi: Transaksi ini milik User siapa?
+     * Relasi user
      */
-    public function user(): BelongsTo
+    public function user()
     {
-        // 'id_user' pertama adalah foreign key di tabel transaksis
-        // 'id_user' kedua adalah primary key di tabel users
         return $this->belongsTo(User::class, 'id_user', 'id_user');
     }
 
     /**
-     * Relasi: Transaksi ini untuk Mobil yang mana?
+     * Relasi mobil
      */
-    public function mobil(): BelongsTo
+    public function mobil()
     {
-        // 'id_mobil' pertama adalah foreign key di tabel transaksis
-        // 'id_mobil' kedua adalah primary key di tabel mobils
-        return $this->belongsTo(Mobil::class, 'id_mobil', 'id_mobil');
+        return $this->belongsTo(Mobil::class, 'id_mobil', 'id');
     }
 }

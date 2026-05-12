@@ -4,95 +4,98 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MobilController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\Admin\OwnerController;
+use App\Http\Controllers\OwnerController;
 use App\Http\Controllers\TransaksiController;
-use App\Http\Controllers\LaporanController;
-use App\Http\Controllers\Owner\DashboardController;
+use App\Http\Controllers\BookingController; 
+use App\Http\Controllers\GuestController;
+use App\Http\Controllers\ArmadaController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\AdminArmadaController;
 
 /*
 |--------------------------------------------------------------------------
-| Web Routes
+| Web Routes - RentaCar System
 |--------------------------------------------------------------------------
 */
 
-// --- HALAMAN PUBLIK ---
-Route::get('/', function () { 
-    return view('welcome'); 
-})->name('home');
+// --- 1. HALAMAN PUBLIK ---
+Route::get('/', [MobilController::class, 'welcome'])->name('home');
+Route::get('/daftar-mobil', [GuestController::class, 'index'])->name('mobil.umum');
+Route::get('/mobil/detail/{id}', [MobilController::class, 'show'])->name('mobil.detail');
 
-Route::get('/daftar-mobil', [MobilController::class, 'index'])->name('mobil.index');
-
-// --- KHUSUS GUEST (BELUM LOGIN) ---
+// --- 2. KHUSUS GUEST (Belum Login) ---
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
-    
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
 });
 
-// --- KHUSUS AUTH (SUDAH LOGIN) ---
+// --- 3. SEMUA USER LOGIN (Auth Middleware) ---
 Route::middleware('auth')->group(function () {
     
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    // --- GROUP ADMIN (Semua route di sini otomatis punya prefix 'admin/' dan nama 'admin.') ---
+    // ==========================================
+    // A. ROUTE GROUP ADMIN 
+    // (Gue gabungin semua ke sini biar gak mencar-mencar)
+    // ==========================================
     Route::prefix('admin')->name('admin.')->group(function () {
-        
-        // Dashboard Utama
+        // Dashboard
         Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
         
-        // --- USER MANAGEMENT ---
-        Route::get('/users', [AdminController::class, 'dataUser'])->name('users');
-        
-        // Detail User
-        Route::get('/users/detail/{id_user}', [AdminController::class, 'showUser'])->name('users.detail');
-        
-        // Edit & Update User (Gunakan id_user agar sinkron dengan database)
-        Route::get('/users/edit/{id_user}', [AdminController::class, 'editUser'])->name('users.edit');
-        Route::put('/users/update/{id_user}', [AdminController::class, 'updateUser'])->name('users.update');
-        
-        // Export Data
+        // Manajemen User (Sekarang pakai UserController sesuai permintaan lo)
+        Route::get('/users', [UserController::class, 'index'])->name('users');
+        Route::get('/users/detail/{id}', [UserController::class, 'detail'])->name('users.detail');
+        Route::get('/users/edit/{id}', [AdminController::class, 'userEdit'])->name('users.edit');
+        Route::put('/users/update/{id}', [AdminController::class, 'userUpdate'])->name('users.update');
         Route::get('/users/export', [AdminController::class, 'exportUser'])->name('users.export');
-        
-        // --- OWNER MANAGEMENT (Verifikasi & Kelola) ---
-        Route::get('/owner', [OwnerController::class, 'index'])->name('owner');
-        Route::patch('/owner/{id}/approve', [OwnerController::class, 'approve'])->name('owner.approve');
-        Route::patch('/owner/{id}/reject', [OwnerController::class, 'reject'])->name('owner.reject');
 
-        // --- TRANSAKSI & MOBIL ---
-        Route::get('/transaksi', [AdminController::class, 'manageTransactions'])->name('transactions');
+        // Lain-lain
         Route::get('/mobil', [AdminController::class, 'manageMobil'])->name('mobil');
-
-
-        // Di dalam Route::prefix('admin')->name('admin.')->group(function () { ... })
-
-Route::get('/mobil', [AdminController::class, 'manageMobil'])->name('mobil');
-Route::get('/mobil/detail/{id_mobil}', [AdminController::class, 'showMobil'])->name('mobil.detail');
-Route::delete('/mobil/delete/{id_mobil}', [AdminController::class, 'destroyMobil'])->name('mobil.delete');
-        
+        Route::get('/transactions', [TransaksiController::class, 'index'])->name('transactions');
+        Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
     });
-          //route transaksi
-Route::prefix('admin')->name('admin.')->group(function () {
-    // ... rute lainnya
+
+    // ==========================================
+    // B. ROUTE GROUP OWNER
+    // ==========================================
+    Route::middleware(['isOwner'])->prefix('owner')->name('owner.')->group(function () {
+        Route::get('/dashboard', [OwnerController::class, 'index'])->name('dashboard');
+        
+        // Manajemen Armada
+        Route::get('/daftar-mobil', [OwnerController::class, 'daftarMobil'])->name('daftar_mobil');
+        Route::get('/mobil/create', [OwnerController::class, 'createMobil'])->name('mobil.create');
+        Route::post('/mobil/store', [MobilController::class, 'store'])->name('mobil.store');
+        Route::get('/mobil/detail/{id}', [MobilController::class, 'show'])->name('mobil.show');
+        Route::get('/mobil/edit/{id}', [OwnerController::class, 'editMobil'])->name('mobil.edit');
+        Route::put('/mobil/update/{id}', [MobilController::class, 'update'])->name('mobil.update');
+        Route::delete('/mobil/delete/{id}', [OwnerController::class, 'destroyMobil'])->name('mobil.destroy');
+        
+        // Tambahan Resource kalau lo mau pake ArmadaController
+        Route::resource('armada', ArmadaController::class)->except(['show']); 
+    });
+
+    // ==========================================
+    // C. ROUTE CUSTOMER & BOOKING
+    // ==========================================
+    Route::prefix('customer')->name('customer.')->group(function () {
+        Route::get('/riwayat-sewa', [TransaksiController::class, 'history'])->name('riwayat');
+    });
+
+    Route::get('/booking/{id}', [BookingController::class, 'create'])->name('booking.create');
+    Route::post('/booking/store', [BookingController::class, 'store'])->name('booking.store');
+
+
+  
+
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
     
-    // Ubah dari AdminController ke TransaksiController
-    Route::get('/transaksi', [TransaksiController::class, 'index'])->name('transactions');
+    // Route List Mobil
+    Route::get('/mobil', [AdminArmadaController::class, 'index'])->name('mobil');
+    
+    // Route Detail Mobil (PASTIKAN ADA .name('mobil.detail'))
+    Route::get('/mobil/detail/{id}', [AdminArmadaController::class, 'show'])->name('mobil.detail');
+    
 });
-
-Route::middleware('auth')->group(function () {
-    Route::prefix('admin')->name('admin.')->group(function () {
-        
-        // Pastikan baris ini ada dan namanya tepat 'laporan'
-        Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan');
-        
-    });
-    });
-          //Route for owner
-
-Route::middleware(['auth', 'isOwner'])->group(function () {
-    Route::get('/owner/dashboard', [DashboardController::class, 'index'])->name('owner.dashboard');
-    // Tambahin route lain: Kelola Mobil, Riwayat, dll sesuai menu di gambar
-});
-
 });

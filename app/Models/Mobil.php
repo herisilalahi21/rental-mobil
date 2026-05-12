@@ -2,32 +2,56 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Mobil extends Model
 {
-    use HasFactory;
-
-    protected $table = 'mobils';
-    protected $primaryKey = 'id_mobil'; // Sesuai migration lo
-    public $incrementing = true;
+    // SESUAI SQL: Tabel lo namanya armada_mobils
+    protected $table = 'armada_mobils';
+    
+    // SESUAI SQL: Primary Key lo adalah 'id'
+    protected $primaryKey = 'id';
 
     protected $fillable = [
-        'id_user', 'nama_mobil', 'brand', 'plat_nomor', 'harga_sewa', 'status'
+        'user_id', 
+        'nama_mobil', 
+        'plat_nomor', 
+        'kategori', 
+        'transmisi', 
+        'tahun', 
+        'harga_per_hari', 
+        'deskripsi', 
+        'fitur', 
+        'foto', 
+        'status'
     ];
 
-    // Relasi balik ke Owner
-    public function user()
+    protected $casts = [
+        'fitur' => 'array', // Karena di SQL tipe datanya TEXT
+    ];
+
+    public function owner()
     {
-        return $this->belongsTo(User::class, 'id_user', 'id_user');
+        // Relasi ke users (id_user)
+        return $this->belongsTo(User::class, 'user_id', 'id_user');
     }
 
-    // Di dalam app/Models/Mobil.php, ubah bagian relasi user
-public function owner()
-{
-    // FK adalah id_owner yang merujuk ke id_user di tabel users
-    return $this->belongsTo(User::class, 'id_owner', 'id_user');
-}
-}
 
+
+    /**
+     * Galeri mobil
+     */
+    public function galeri()
+    {
+        return $this->hasMany(GaleriMobil::class, 'id_mobil', 'id');
+    }
+
+    /**
+     * Transaksi
+     */
+    public function transaksis()
+    {
+        return $this->hasMany(Transaksi::class, 'id_mobil', 'id');
+    }
+
+}
